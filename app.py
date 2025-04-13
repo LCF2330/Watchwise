@@ -1,31 +1,57 @@
 from flask import Flask, render_template, request, redirect, url_for
-from utils import dynamo
+from utils.dynamo import get_items, get_item, add_item, update_item, delete_item
 
 app = Flask(__name__)
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+USER_ID = "some_user_id"  # Use a dynamic user ID in production
 
-@app.route('/watchlist')
+@app.route('/')
 def watchlist():
-    user_id = 'some_user_id' 
-    items = dynamo.get_items(user_id) 
+    items = get_items(USER_ID)
     return render_template('watchlist.html', items=items)
 
-
-@app.route('/add_to_watchlist', methods=['POST'])
-def add_to_watchlist():
+@app.route('/add', methods=['GET', 'POST'])
+def add():
     if request.method == 'POST':
-        user_id = request.form['user_id']
-        item_id = request.form['item_id']
         title = request.form['title']
         genre = request.form['genre']
         rating = request.form['rating']
+        watched = 'watched' in request.form  # Checkbox for 'watched'
+        add_item(USER_ID, title, genre, rating, watched)
+        return redirect(url_for('watchlist'))
+    return render_template('add.html')
 
-        # Add item to DynamoDB
-        dynamo.add_item(user_id, item_id, title, genre, rating)
-        return redirect(url_for('watchlist'))  # Redirect to watchlist after adding
+@app.route('/update/<title>', methods=['GET', 'POST'])
+def update(title):
+    item = get_item(USER_ID, title)
+    
+    if item is None:
+        return "Item not found", 404  # Item not found
+    
+    if request.method == 'POST':
+        new_title = request.form['title']
+        genre = request.form['genre']
+        rating = request.form['rating']
+        watched = 'watched' in request.form  # Checkbox for 'watched'
 
-if __name__ == '__main__':
+        # Update the item in the database
+        update_item(USER_ID, title, new_title, genre, rating, watched)
+
+        return redirect(url_for('watchlist'))
+
+    return render_template('update.html', item=item)
+
+@app.route('/delete/<title>', methods=['POST'])
+def delete(title):
+    item = get_item(USER_ID, title)
+    
+    if item is None:
+        return "Item not found", 404  # Item not found
+    
+    # Proceed with deleting the item from the DynamoDB table
+    delete_item(USER_ID, title)
+    
+    return redirect(url_for('watchlist'))
+
+if __name__ == "__main__":
     app.run(debug=True)

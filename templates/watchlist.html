@@ -3,35 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Watchlist</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Watchlist</title>
+
+    <!-- Bootstrap CSS (for styling) -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- DataTables CSS (for table functionality) -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+    
+    <style>
+        body {
+            background-color: #f4f4f9;
+            font-family: 'Arial', sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .container {
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        #watchlistTable_wrapper {
+            margin-top: 20px;
+        }
+
+        .btn-primary, .btn-danger, .btn-warning {
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="mb-4">Your Watchlist</h1>
-        
-        <!-- Display Watchlist Items -->
-        {% if items %}
-            <ul class="list-group">
-                {% for item in items %}
-                    <li class="list-group-item">
-                        <h5>{{ item.title }}</h5>
-                        <p>Genre: {{ item.genre }}</p>
-                        <p>Rating: {{ item.rating }}</p>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No items in your watchlist.</p>
-        {% endif %}
-        
-        <hr class="my-4">
-        
+    <div class="container">
+        <h1>Watchlist</h1>
 
-        <a href="{{ url_for('index') }}" class="btn btn-secondary">Add More Items</a>
+        <!-- Add New Item Button -->
+        <a href="{{ url_for('add') }}">
+            <button class="btn btn-primary">Add New Item</button>
+        </a>
+
+        <!-- Watchlist Table -->
+        <table id="watchlistTable" class="table table-striped table-bordered table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Title</th>
+                    <th>Genre</th>
+                    <th>Rating</th>
+                    <th>Watched</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td>{{ item.title }}</td>
+                        <td>{{ item.genre }}</td>
+                        <td>{{ item.rating }}</td>
+                        <td>{{ item.watched }}</td>
+                        <td>
+                            <!-- Update and Delete Buttons -->
+                            <a href="{{ url_for('update', title=item.title) }}" class="btn btn-warning btn-sm">Update</a>
+                            <form action="{{ url_for('delete', title=item.title) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <!-- Bootstrap JS (optional, for enhanced functionality like tooltips, modals) -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Initialize DataTables -->
+    <script>
+        $(document).ready(function() {
+            $('#watchlistTable').DataTable({
+                responsive: true,   // Makes the table more responsive on smaller screens
+                lengthMenu: [5, 10, 25, 50],  // Allows the user to select the number of rows per page
+                pageLength: 10      // Default number of rows per page
+            });
+        });
+    </script>
 </body>
 </html>

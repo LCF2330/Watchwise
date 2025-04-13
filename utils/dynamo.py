@@ -1,37 +1,62 @@
-import os
 import boto3
-from dotenv import load_dotenv
 from boto3.dynamodb.conditions import Key
 
-# Load environment variables
-load_dotenv()
-
-# Initialize DynamoDB resource
-dynamodb = boto3.resource(
-    'dynamodb',
-    region_name=os.getenv('AWS_REGION'),
-    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
-)
-
-# Access the table
-table = dynamodb.Table(os.getenv('DYNAMO_TABLE_NAME'))
+# Initialize the DynamoDB resource
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+table = dynamodb.Table('Watchlist')  # Replace with your actual table name
 
 def get_items(user_id):
-    """Retrieve all items for a specific user from the watchlist."""
+    # Query DynamoDB to get items for a particular user
     response = table.query(
         KeyConditionExpression=Key('user_id').eq(user_id)
     )
-    return response.get('Items', [])
+    return response['Items']
 
-def add_item(user_id, item_id, title, genre, rating):
-    """Add a new item to the user's watchlist."""
+def get_item(user_id, title):
+    response = table.get_item(
+        Key={
+            'user_id': user_id,
+            'title': title
+        }
+    )
+    return response.get('Item')
+
+def add_item(user_id, title, genre, rating, watched=False):
     table.put_item(
         Item={
             'user_id': user_id,
-            'item_id': item_id,
             'title': title,
             'genre': genre,
-            'rating': rating
+            'rating': rating,
+            'watched': watched
+        }
+    )
+
+def update_item(user_id, old_title, new_title, genre, rating, watched):
+    if old_title != new_title:
+        # Delete the old item
+        delete_item(user_id, old_title)
+        # Add the new item
+        add_item(user_id, new_title, genre, rating, watched)
+    else:
+        # Update only non-key attributes
+        table.update_item(
+            Key={
+                'user_id': user_id,
+                'title': old_title
+            },
+            UpdateExpression="SET genre = :g, rating = :r, watched = :w",
+            ExpressionAttributeValues={
+                ':g': genre,
+                ':r': rating,
+                ':w': watched
+            }
+        )
+
+def delete_item(user_id, title):
+    table.delete_item(
+        Key={
+            'user_id': user_id,
+            'title': title
         }
     )
