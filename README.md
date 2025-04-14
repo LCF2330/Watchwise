@@ -8,7 +8,7 @@
 
 - Add items (title, genre, rating) to a personal watchlist
 - View items stored in AWS DynamoDB
-- Fully responsive, Bootstrap-styled dark mode UI
+- Fully responsive, Bootstrap-styled
 - Hosted with Azure or tested locally
 
 ---
