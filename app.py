@@ -3,7 +3,7 @@ from utils.dynamo import get_items, get_item, add_item, update_item, delete_item
 from utils.auth import validate_user
 
 app = Flask(__name__)
-app.secret_key = 'some-super-secret-key' 
+app.secret_key = 'some-super-secret-key'
 
 @app.route('/')
 def watchlist():
@@ -74,7 +74,7 @@ def login():
         if validate_user(email, password):
             session['user_id'] = email
             return redirect(url_for('watchlist'))
-        return "Invalid credentials", 401
+        return render_template('invalid_login.html')
     return render_template('login.html')
 
 @app.route('/logout')
