@@ -3,7 +3,7 @@ from utils.dynamo import get_items, get_item, add_item, update_item, delete_item
 from utils.auth import validate_user
 
 app = Flask(__name__)
-app.secret_key = 'some-super-secret-key'  # Replace with a secure key in production
+app.secret_key = 'some-super-secret-key' 
 
 @app.route('/')
 def watchlist():

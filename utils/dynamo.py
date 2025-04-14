@@ -1,12 +1,25 @@
 import boto3
 from boto3.dynamodb.conditions import Key
+import os
+from dotenv import load_dotenv
 
-# Initialize the DynamoDB resource
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-table = dynamodb.Table('Watchlist')  # Replace with your actual table name
+# Load environment variables
+load_dotenv()
+
+aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
+aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+aws_region = os.getenv("AWS_REGION", "us-east-1")
+
+dynamodb = boto3.resource(
+    'dynamodb',
+    region_name=aws_region,
+    aws_access_key_id=aws_access_key,
+    aws_secret_access_key=aws_secret_key
+)
+
+table = dynamodb.Table('Watchlist')
 
 def get_items(user_id):
-    # Query DynamoDB to get items for a particular user
     response = table.query(
         KeyConditionExpression=Key('user_id').eq(user_id)
     )
@@ -14,10 +27,7 @@ def get_items(user_id):
 
 def get_item(user_id, title):
     response = table.get_item(
-        Key={
-            'user_id': user_id,
-            'title': title
-        }
+        Key={'user_id': user_id, 'title': title}
     )
     return response.get('Item')
 
@@ -34,17 +44,11 @@ def add_item(user_id, title, genre, rating, watched=False):
 
 def update_item(user_id, old_title, new_title, genre, rating, watched):
     if old_title != new_title:
-        # Delete the old item
         delete_item(user_id, old_title)
-        # Add the new item
         add_item(user_id, new_title, genre, rating, watched)
     else:
-        # Update only non-key attributes
         table.update_item(
-            Key={
-                'user_id': user_id,
-                'title': old_title
-            },
+            Key={'user_id': user_id, 'title': old_title},
             UpdateExpression="SET genre = :g, rating = :r, watched = :w",
             ExpressionAttributeValues={
                 ':g': genre,
@@ -55,8 +59,5 @@ def update_item(user_id, old_title, new_title, genre, rating, watched):
 
 def delete_item(user_id, title):
     table.delete_item(
-        Key={
-            'user_id': user_id,
-            'title': title
-        }
+        Key={'user_id': user_id, 'title': title}
     )
