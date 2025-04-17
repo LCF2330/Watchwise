@@ -32,6 +32,7 @@
                     <th>Genre</th>
                     <th>Rating</th>
                     <th>Watched</th>
+                    <th>Review</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -42,6 +43,7 @@
                     <td>{{ item.genre }}</td>
                     <td>{{ item.rating }}</td>
                     <td>{{ 'Yes' if item.watched else 'No' }}</td>
+                    <td>{{ item.review }}</td>
                     <td>
                         <a href="{{ url_for('update', title=item.title) }}" class="btn btn-warning btn-sm">Update</a>
                         <form action="{{ url_for('delete', title=item.title) }}" method="post" style="display:inline;">
