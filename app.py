@@ -76,7 +76,8 @@ def login():
         if validate_user(email, password):
             session['user_id'] = email
             return redirect(url_for('watchlist'))
-        return render_template('invalid_credentials.html')
+        else:
+            return render_template('invalid_login.html')
     return render_template('login.html')
 
 @app.route('/logout')
